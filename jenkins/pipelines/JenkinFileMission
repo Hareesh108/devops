@@ -1,0 +1,124 @@
+pipeline {
+    agent any
+
+    // Specify tool installations configured in Jenkins
+    tools {
+        jdk 'jdk17'          // Use JDK 17
+        maven 'maven3'       // Use Maven 3
+    }
+    
+    // Define environment variables
+    environment {
+        SCANNER_HOME = tool 'sonar-scanner'  // Set SonarQube Scanner path
+    }
+
+    stages {
+        stage('Git Checkout') {
+            // Checkout code from Git repository
+            steps {
+                git branch: 'main', url: 'https://github.com/Hareesh108/Mission.git'
+            }
+        }
+
+        stage('Compile') {
+            // Compile the Java source code
+            steps {
+                sh 'mvn compile'
+            }
+        }
+
+        stage('Test') {
+            // Run tests but skip actual execution
+            steps {
+                sh "mvn test -DskipTests=true"
+            }
+        }
+
+        stage('Trivy Scan') {
+            // Perform security scan using Trivy
+            steps {
+                sh "trivy fs --format table -o trivy-fs-report.html ."
+            }
+        }
+        
+        stage('Sonar Qube') {
+            // Perform code quality analysis with SonarQube
+            steps {
+                withSonarQubeEnv('sonar-qube') {
+                    sh '''$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectKey=Mission1 -Dsonar.projectName=Mission1 \
+                        -Dsonar.java.binaries=.'''
+                }
+            }
+        }
+        
+        stage('Build') {
+            // Package the application
+            steps {
+                sh 'mvn package -DskipTests=true'
+            }
+        }
+        
+        // stage('Deploy artifacts to nexus') {
+        //     steps {
+        //         withMaven(globalMavenSettingsConfig: 'maven-file', jdk: 'jdk17', maven: 'maven3', mavenSettingsConfig: '', traceability: true) {
+        //                 sh 'mvn deploy -DskipTests=true'
+        //          }
+        //     }
+        // }
+        
+        stage('Docker image') {
+            steps {
+                script {
+                       // This step should not normally be used in your script. Consult the inline help for details.
+                        withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
+                            sh "docker build -t hareesh108/mission:latest ."
+                    }
+                }
+            }
+        }
+        
+        stage('Trivy docker image Scan') {
+            // Perform security scan using Trivy
+            steps {
+                sh "trivy image --format table -o trivy-image-report.html hareesh108/mission:latest"
+            }
+        }
+        
+        stage('Docker image push') {
+            steps {
+                script {
+                       // This step should not normally be used in your script. Consult the inline help for details.
+                        withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
+                            sh "docker push hareesh108/mission:latest"
+                    }
+                }
+            }
+        }
+        
+      
+        stage('Deploy to Container') {
+            steps {
+                script {
+                    // Stop any existing container using the port
+                    sh '''
+                    PORT=8093
+                    EXISTING_CONTAINER=$(docker ps -q --filter publish=$PORT)
+                    if [ ! -z "$EXISTING_CONTAINER" ]; then
+                        docker stop $EXISTING_CONTAINER
+                        docker rm $EXISTING_CONTAINER
+                    fi
+                    '''
+
+                    // Start a new container with the specified port mapping
+                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
+                        sh "docker run -d -p 8093:8080 hareesh108/mission:latest"
+                    }
+                }
+            }
+        }
+
+        
+    }
+    
+}
+
