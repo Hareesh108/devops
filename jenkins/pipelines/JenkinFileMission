@@ -7,11 +7,6 @@ pipeline {
         maven 'maven3'       // Use Maven 3
     }
     
-    // Define environment variables
-    environment {
-        SCANNER_HOME = tool 'sonar-scanner'  // Set SonarQube Scanner path
-    }
-
     stages {
         stage('Git Checkout') {
             // Checkout code from Git repository
@@ -38,16 +33,6 @@ pipeline {
             // Perform security scan using Trivy
             steps {
                 sh "trivy fs --format table -o trivy-fs-report.html ."
-            }
-        }
-        
-        stage('Sonar Qube') {
-            // Perform code quality analysis with SonarQube
-            steps {
-                withSonarQubeEnv('sonar-qube') {
-                    sh '''$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectKey=Mission1 -Dsonar.projectName=Mission1 \
-                        -Dsonar.java.binaries=.'''
-                }
             }
         }
         
