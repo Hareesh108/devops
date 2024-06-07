@@ -1,0 +1,66 @@
+pipeline:
+  agent: any
+  tools:
+    jdk: 'jdk17'       
+    maven: 'maven3'    
+  environment:
+    SCANNER_HOME: tool 'sonar-scanner'
+  stages:
+    - stage: 'Git Checkout'
+      steps:
+        - git:
+            branch: 'main'
+            url: 'https://github.com/Hareesh108/Mission.git'
+
+    - stage: 'Compile'
+      steps:
+        - sh: 'mvn compile'
+
+    - stage: 'Test'
+      steps:
+        - sh: 'mvn test -DskipTests=true'
+
+    - stage: 'Trivy Scan'
+      steps:
+        - sh: 'trivy fs --format table -o trivy-fs-report.html .'
+
+    - stage: 'Sonar Qube'
+      steps:
+        - script: |
+            sonarQubeScannerHome=$(sh(returnStdout: true, script: "docker ps -q --filter publish=${PORT}"))
+            sonarQubeScannerHome=$(echo ${sonarQubeScannerHome} | tr -d '[:space:]')
+            sh "${sonarQubeScannerHome}/bin/sonar-scanner -Dsonar.projectKey=Mission1 -Dsonar.projectName=Mission1 -Dsonar.java.binaries=."
+
+    - stage: 'Build'
+      steps:
+        - sh: 'mvn package -DskipTests=true'
+
+    - stage: 'Docker image'
+      steps:
+        - script:
+            docker.withRegistry('https://registry.hub.docker.com', 'docker-cred') {
+              sh 'docker build -t hareesh108/mission:latest .'
+            }
+
+    - stage: 'Trivy docker image Scan'
+      steps:
+        - sh: 'trivy image --format table -o trivy-image-report.html hareesh108/mission:latest'
+
+    - stage: 'Docker image push'
+      steps:
+        - script:
+            docker.withRegistry('https://registry.hub.docker.com', 'docker-cred') {
+              sh 'docker push hareesh108/mission:latest'
+            }
+
+    - stage: 'Deploy to Container'
+      steps:
+        - script:
+                PORT_CONTAINER=$(docker ps -q --filter publish=${PORT})
+        - script:
+            if [ ! -z "${PORT_CONTAINER}" ]; then
+              sh "docker stop ${PORT_CONTAINER}"
+              sh "docker rm ${PORT_CONTAINER}"
+            fi
+        - script:
+            sh "docker run -d -p 8093:8080 hareesh108/mission:latest"
