@@ -1,0 +1,41 @@
+FROM node:18-alpine as build
+WORKDIR /app
+# Set environment variables
+ARG REACT_APP_DIGIBANK_API_ENDPOINT
+ARG REACT_APP_CLIENT_ID
+ARG REACT_APP_CLIENT_SECRET
+ARG REACT_APP_CC_CLIENT_ID
+ARG REACT_APP_CC_CLIENT_SECRET
+ARG REACT_APP_CC_SCOPE
+ARG REACT_APP_CC_GRANT_TYPE
+ARG REACT_APP_FORGEROCK_URL
+
+ENV REACT_APP_DIGIBANK_API_ENDPOINT=$REACT_APP_DIGIBANK_API_ENDPOINT \
+  REACT_APP_CLIENT_ID=$REACT_APP_CLIENT_ID \
+  REACT_APP_CLIENT_SECRET=$REACT_APP_CLIENT_SECRET \
+  REACT_APP_CC_CLIENT_ID=$REACT_APP_CC_CLIENT_ID \
+  REACT_APP_CC_CLIENT_SECRET=$REACT_APP_CC_CLIENT_SECRET \
+  REACT_APP_CC_SCOPE=$REACT_APP_CC_SCOPE \
+  REACT_APP_CC_GRANT_TYPE=$REACT_APP_CC_GRANT_TYPE \
+  REACT_APP_FORGEROCK_URL=$REACT_APP_FORGEROCK_URL
+
+COPY . .
+RUN npm install --legacy-peer-deps
+RUN npm run build
+
+FROM nginx:mainline-alpine3.18-slim
+RUN apk upgrade --no-cache
+RUN apk update && apk upgrade openssl
+WORKDIR /usr/share/nginx/html
+RUN rm -rf ./*
+# Copy the build artifacts from the build stage
+COPY --from=build --chown=nginx:nginx /app/build .
+# Copy the nginx configuration file
+COPY nginx.conf /etc/nginx/nginx.conf
+# Set the entrypoint
+RUN addgroup nonroot; adduser --ingroup nonroot --disabled-password nonroot
+RUN chown nonroot /usr/share/nginx/html
+RUN chown nonroot /var/cache/nginx
+RUN chown nonroot /var/run/
+USER nonroot
+ENTRYPOINT ["nginx", "-g", "daemon off;"]
