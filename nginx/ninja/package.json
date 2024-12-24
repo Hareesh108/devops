@@ -4,11 +4,15 @@
   "description": "Practice",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node dist/index",
+    "dev": "tsc-watch --onSuccess \"npm start\"",
+    "build": "tsc -p ."
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/node": "^22.10.2",
+    "tsc-watch": "^6.2.1",
     "typescript": "^5.7.2"
   }
 }
