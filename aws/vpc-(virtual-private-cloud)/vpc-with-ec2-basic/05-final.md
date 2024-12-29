@@ -14,3 +14,7 @@
 ```bash
     ssh -i "ec2_key_pair.pem" ec2-user@13.234.225.93
  ```
+
+## Private subnet and route table will used for private internal EC2
+
+### ref ./vpc-internal-ec2-nat
