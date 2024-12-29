@@ -10,6 +10,8 @@ Login aws account and search for VPC then select that service.
 - Name : ```public-subnet```
 - Select the Availability Zone.
 - IPv4 subnet CIDR block (add manual address) ```10.0.0.1/24```
+- After creating above subnet use actions option and select Edit subnet settings.
+- Check mark the Auto-assign IP settings.
 - Name : ```private-subnet```
 - Select the Availability Zone.
 - IPv4 subnet CIDR block (add manual address) ```10.0.1.0/24```
