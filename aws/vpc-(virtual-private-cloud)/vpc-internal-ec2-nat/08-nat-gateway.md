@@ -1,4 +1,4 @@
-## Lest create NAT Gateway
+## Lets create NAT Gateway
 
 - Click on Create NAT gateway.
 - Name and Select public subnet.
@@ -7,4 +7,4 @@
 - Then assign this gateway to private subnet which is using that private EC2.
 - Try to access the Public:
 - Like ```ping google.com or curl www.google.com```.
-_ Done.
+- Done.
