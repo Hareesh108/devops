@@ -7,3 +7,7 @@ Login aws account and search for VPC then select that service.
 
 - Name ``demo-gateway``
 - Attach a VPC you created. (Use action option)
+- Lets try to connect.
+- ohh, yet again it is not connecting.
+- We need to give route using Route table.
+- Lets create Route tables.
