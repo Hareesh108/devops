@@ -15,6 +15,6 @@
 ### Go to private Route table Route
 
 - Select route then add route ```0.0.0.0/0```.
-- target to created NAT instance.
+- target to created NAT (Network Address Translation) instance.
 - Save changes.
 - Now you should able to connect.
