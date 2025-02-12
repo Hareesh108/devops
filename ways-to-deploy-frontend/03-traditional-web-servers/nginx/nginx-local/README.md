@@ -1,36 +1,78 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Deploying a Next application on a local Linux machine using Nginx is a straightforward process
 
-## Getting Started
+### Simple web server
 
-First, run the development server:
+```
+server {
+    listen 80;
+    server_name <IP>
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+    root /var/www/html;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Web server with openssl configuration
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+#### Enable HTTPS (Self-Signed)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+sudo mkdir -p /etc/nginx/ssl
+sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+  -keyout /etc/nginx/ssl/selfsigned.key \
+  -out /etc/nginx/ssl/selfsigned.crt
+```
 
-## Learn More
+#### configuration
 
-To learn more about Next.js, take a look at the following resources:
+```
+server {
+    listen 443 ssl;
+    server_name <IP>
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+    ssl_certificate /etc/nginx/ssl/selfsigned.crt;
+    ssl_certificate_key /etc/nginx/ssl/selfsigned.key;
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+    root /var/www/html;
+    index index.html;
 
-## Deploy on Vercel
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+server {
+    listen 80;
+    server_name <IP>
+    return 301 https://$host$request_uri;
+}
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Bind with specific ip
+
+```
+server {
+    listen 192.168.68.104:443 ssl;
+    server_name 192.168.68.104; 
+
+    ssl_certificate /etc/nginx/ssl/selfsigned.crt;
+    ssl_certificate_key /etc/nginx/ssl/selfsigned.key;
+
+    root /var/www/html;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
+
+server {
+    listen 192.168.68.104:80;
+    server_name 192.168.68.104;
+    return 301 https://$host$request_uri;
+}
+```
