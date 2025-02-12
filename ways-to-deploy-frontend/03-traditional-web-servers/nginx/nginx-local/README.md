@@ -27,6 +27,31 @@ sudo cp /etc/nginx/sites-available/default /etc/nginx/sites-available/default.ba
 sudo nano /etc/nginx/sites-available/default
 ```
 
+### If you want to serve any connected wifi IP address
+
+```nginx
+server {
+    listen 443 ssl;
+    server_name _;
+
+    ssl_certificate /etc/nginx/ssl/selfsigned.crt;
+    ssl_certificate_key /etc/nginx/ssl/selfsigned.key;
+
+    root /var/www/html;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
+
+server {
+    listen 80;
+    server_name _;
+    return 301 https://$host$request_uri;
+}
+```
+
 ### Replace with
 
 ```nginx
