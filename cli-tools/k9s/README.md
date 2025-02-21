@@ -1,5 +1,11 @@
 # K9s Tool Commands with Examples
 
+## k9s (Kubernetes TUI)
+
+- A terminal-based UI for Kubernetes.
+- Provides a live, interactive way to manage cluster resources.
+- Offers better visibility than plain kubectl commands.
+
 ## 1. Basic Commands
 
 ### **Launch K9s**
