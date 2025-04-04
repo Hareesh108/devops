@@ -8,6 +8,7 @@ Before setting up AWS Lambda, ensure you have:
 - AWS CLI installed and configured (`aws configure`)
 - IAM user/role with `AWSLambdaFullAccess` permissions
 - AWS SAM CLI (optional for local development)
+- Check installation
 
 ## 2. Create a Lambda Function
 
