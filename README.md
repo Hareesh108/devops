@@ -1,6 +1,6 @@
 # 🚀 DevOps Learning Journey
 
-A repository documenting my progress in learning DevOps practices and tools. Includes infrastructure as code, CI/CD pipelines, cloud technologies, containerization, and automation projects.
+A repository documenting my progress in learning DevOps practices and tools. This includes infrastructure such as code, CI/CD pipelines, cloud technologies, containerization, and automation projects.
 
 ## 📝 Description
 This repository serves as:
