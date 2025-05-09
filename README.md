@@ -17,4 +17,4 @@ This repository serves as:
 - **Configuration Management**: Ansible, Chef, Puppet
 - **Monitoring**: Prometheus, Grafana, ELK Stack
 - **Scripting**: Bash, Python, PowerShell
-- **Version Control**: Git, GitHub, Git Strategies
+- **Version Control**: Git, GitHub, Git Strategies, Gitlab,
